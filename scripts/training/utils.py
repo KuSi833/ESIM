@@ -118,6 +118,7 @@ def validate(model, dataloader, criterion):
             hypotheses_lengths = batch["hypothesis_length"].to(device)
             labels = batch["label"].to(device)
 
+            print(device, model.device)
             logits, probs = model(premises,
                                   premises_lengths,
                                   hypotheses,

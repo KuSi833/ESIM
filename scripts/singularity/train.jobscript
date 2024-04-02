@@ -1,0 +1,17 @@
+#!/bin/bash --login
+#$ -cwd                      # Use the current working directory
+#$ -j y                      # Merge the standard out and standard error to one file
+#$ -l v100
+#$ -pe smp.pe 8
+
+echo "Loading modules"
+module load libs/cuda
+module load apps/gcc/apptainer/1.0.3
+
+echo "Job is using $NGPUS GPU(s) with ID(s) $CUDA_VISIBLE_DEVICES and $NSLOTS CPU core(s)"
+
+# Run the run.sh script
+export SINGULARITY_IMAGE="docker://kusi833/esim:latest"
+export GROUP="fse-ugpgt01"
+
+./train.sh

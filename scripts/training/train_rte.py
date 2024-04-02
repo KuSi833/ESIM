@@ -17,6 +17,12 @@ from esim.data import NLIDataset
 from esim.model import ESIM
 from utils import train, validate
 
+if torch.cuda.is_available():
+    for i in range(torch.cuda.device_count()):
+        print(f'CUDA Device {i}:', torch.cuda.get_device_name(i))
+else:
+    print("No CUDA devices available.")
+
 
 def main(train_file,
          valid_file,
