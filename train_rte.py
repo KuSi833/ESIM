@@ -15,7 +15,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from src.data import NLIDataset
 from src.model import ESIM
-from .utils import train, validate
+from utils import train, validate
 
 if torch.cuda.is_available():
     for i in range(torch.cuda.device_count()):

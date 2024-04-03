@@ -28,7 +28,7 @@ sg $GROUP -c "singularity run $NVIDIAFLAG \
     --pwd /home/dockeruser/esim \
     --contain \
     $SINGULARITY_IMAGE \
-    python3 scripts/training/train_rte.py"
+    python3 -m scripts.training.train_rte"
 
 # sg $GROUP -c "singularity run $NVIDIAFLAG \
 #     --env WANDB_API_KEY=$WANDB_API_KEY \

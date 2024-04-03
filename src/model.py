@@ -68,30 +68,24 @@ class ESIM(nn.Module):
 
         self._attention = SoftmaxAttention()
 
-        self._projection = nn.Sequential(nn.Linear(4*2*self.hidden_size,
-                                                   self.hidden_size),
-                                         nn.ReLU())
+        self._projection = nn.Sequential(
+            nn.Linear(4 * 2 * self.hidden_size, self.hidden_size), nn.ReLU())
 
         self._composition = Seq2SeqEncoder(nn.LSTM,
                                            self.hidden_size,
                                            self.hidden_size,
                                            bidirectional=True)
 
-        self._classification = nn.Sequential(nn.Dropout(p=self.dropout),
-                                             nn.Linear(2*4*self.hidden_size,
-                                                       self.hidden_size),
-                                             nn.Tanh(),
-                                             nn.Dropout(p=self.dropout),
-                                             nn.Linear(self.hidden_size,
-                                                       self.num_classes))
+        self._classification = nn.Sequential(
+            nn.Dropout(p=self.dropout),
+            nn.Linear(2 * 4 * self.hidden_size, self.hidden_size), nn.Tanh(),
+            nn.Dropout(p=self.dropout),
+            nn.Linear(self.hidden_size, self.num_classes))
 
         # Initialize all weights and biases in the model.
         self.apply(_init_esim_weights)
 
-    def forward(self,
-                premises,
-                premises_lengths,
-                hypotheses,
+    def forward(self, premises, premises_lengths, hypotheses,
                 hypotheses_lengths):
         """
         Args:
@@ -123,8 +117,7 @@ class ESIM(nn.Module):
             embedded_premises = self._rnn_dropout(embedded_premises)
             embedded_hypotheses = self._rnn_dropout(embedded_hypotheses)
 
-        encoded_premises = self._encoding(embedded_premises,
-                                          premises_lengths)
+        encoded_premises = self._encoding(embedded_premises, premises_lengths)
         encoded_hypotheses = self._encoding(embedded_hypotheses,
                                             hypotheses_lengths)
 
@@ -132,17 +125,15 @@ class ESIM(nn.Module):
             self._attention(encoded_premises, premises_mask,
                             encoded_hypotheses, hypotheses_mask)
 
-        enhanced_premises = torch.cat([encoded_premises,
-                                       attended_premises,
-                                       encoded_premises - attended_premises,
-                                       encoded_premises * attended_premises],
+        enhanced_premises = torch.cat([
+            encoded_premises, attended_premises, encoded_premises -
+            attended_premises, encoded_premises * attended_premises
+        ],
                                       dim=-1)
-        enhanced_hypotheses = torch.cat([encoded_hypotheses,
-                                         attended_hypotheses,
-                                         encoded_hypotheses -
-                                         attended_hypotheses,
-                                         encoded_hypotheses *
-                                         attended_hypotheses],
+        enhanced_hypotheses = torch.cat([
+            encoded_hypotheses, attended_hypotheses, encoded_hypotheses -
+            attended_hypotheses, encoded_hypotheses * attended_hypotheses
+        ],
                                         dim=-1)
 
         projected_premises = self._projection(enhanced_premises)
@@ -187,11 +178,11 @@ def _init_esim_weights(module):
         nn.init.constant_(module.bias_ih_l0.data, 0.0)
         nn.init.constant_(module.bias_hh_l0.data, 0.0)
         hidden_size = module.bias_hh_l0.data.shape[0] // 4
-        module.bias_hh_l0.data[hidden_size:(2*hidden_size)] = 1.0
+        module.bias_hh_l0.data[hidden_size:(2 * hidden_size)] = 1.0
 
         if (module.bidirectional):
             nn.init.xavier_uniform_(module.weight_ih_l0_reverse.data)
             nn.init.orthogonal_(module.weight_hh_l0_reverse.data)
             nn.init.constant_(module.bias_ih_l0_reverse.data, 0.0)
             nn.init.constant_(module.bias_hh_l0_reverse.data, 0.0)
-            module.bias_hh_l0_reverse.data[hidden_size:(2*hidden_size)] = 1.0
+            module.bias_hh_l0_reverse.data[hidden_size:(2 * hidden_size)] = 1.0

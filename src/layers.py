@@ -113,7 +113,7 @@ class Seq2SeqEncoder(nn.Module):
         sorted_batch, sorted_lengths, _, restoration_idx =\
             sort_by_seq_lens(sequences_batch, sequences_lengths)
         packed_batch = nn.utils.rnn.pack_padded_sequence(sorted_batch,
-                                                         sorted_lengths,
+                                                         sorted_lengths.to('cpu'),
                                                          batch_first=True)
 
         outputs, _ = self._encoder(packed_batch, None)
