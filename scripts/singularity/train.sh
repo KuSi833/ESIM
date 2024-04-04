@@ -29,13 +29,3 @@ sg $GROUP -c "singularity run $NVIDIAFLAG \
     --contain \
     $SINGULARITY_IMAGE \
     python3 -m scripts.training.train_rte"
-
-# sg $GROUP -c "singularity run $NVIDIAFLAG \
-#     --env WANDB_API_KEY=$WANDB_API_KEY \
-#     --env LANG=$APPTAINER_LANG \
-#     --env LC_ALL=C.UTF-8 \
-#     --bind $(pwd)/../../:/home/dockeruser/esim \
-#     --pwd /home/dockeruser/esim \
-#     --contain \
-#     $SINGULARITY_IMAGE \
-#     $(printf '%q ' "${@:1}")"
