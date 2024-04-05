@@ -31,7 +31,7 @@ def preprocess_SNLI_data(inputdir,
     The preprocessed data is saved in pickled form in some target directory.
 
     Args:
-        inputdir: The path to the directory containing the NLI corpus.
+        inputdir: The path to the directory containing the rte_own corpus.
         embeddings_file: The path to the file containing the pretrained
             word vectors that must be used to build the embedding matrix.
         targetdir: The path to the directory where the preprocessed data

@@ -28,4 +28,4 @@ sg $GROUP -c "singularity run $NVIDIAFLAG \
     --pwd /home/dockeruser/esim \
     --contain \
     $SINGULARITY_IMAGE \
-    python3 -m scripts.training.train_rte"
+    python3 -m scripts.training.train_rte_own"

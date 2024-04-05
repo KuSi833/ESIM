@@ -15,7 +15,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from src.data import NLIDataset
 from src.model import ESIM
-from utils import train, validate
+from .utils import train, validate
 
 if torch.cuda.is_available():
     for i in range(torch.cuda.device_count()):
@@ -207,7 +207,7 @@ def main(train_file,
 
 
 if __name__ == "__main__":
-    default_config = "../../config/training/rte_training.json"
+    default_config = "../../config/training/rte_own_training.json"
 
     parser = argparse.ArgumentParser(
         description="Train the ESIM model on SNLI")

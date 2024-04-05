@@ -144,13 +144,13 @@ class SoftmaxAttention(nn.Module):
         """
         Args:
             premise_batch: A batch of sequences of vectors representing the
-                premises in some NLI task. The batch is assumed to have the
+                premises in some rte_own task. The batch is assumed to have the
                 size (batch, sequences, vector_dim).
             premise_mask: A mask for the sequences in the premise batch, to
                 ignore padding data in the sequences during the computation of
                 the attention.
             hypothesis_batch: A batch of sequences of vectors representing the
-                hypotheses in some NLI task. The batch is assumed to have the
+                hypotheses in some rte_own task. The batch is assumed to have the
                 size (batch, sequences, vector_dim).
             hypothesis_mask: A mask for the sequences in the hypotheses batch,
                 to ignore padding data in the sequences during the computation

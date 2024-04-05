@@ -1,8 +1,7 @@
 """
-Preprocess the MultiNLI dataset and word embeddings to be used by the
-ESIM model.
+Preprocess the SNLI dataset and word embeddings to be used by the ESIM model.
 """
-# Aurelien Coet, 2019.
+# Aurelien Coet, 2018.
 
 import os
 import pickle
@@ -10,21 +9,21 @@ import argparse
 import fnmatch
 import json
 
-from esim.data import Preprocessor
+from src.data import CSVPreprocessor
 
 
-def preprocess_MNLI_data(inputdir,
-                         embeddings_file,
-                         targetdir,
-                         lowercase=False,
-                         ignore_punctuation=False,
-                         num_words=None,
-                         stopwords=[],
-                         labeldict={},
-                         bos=None,
-                         eos=None):
+def preprocess_RTE_data(inputdir,
+                        embeddings_file,
+                        targetdir,
+                        lowercase=False,
+                        ignore_punctuation=False,
+                        num_words=None,
+                        stopwords=[],
+                        labeldict={},
+                        bos=None,
+                        eos=None):
     """
-    Preprocess the data from the MultiNLI corpus so it can be used by the
+    Preprocess the data from the RTE corpus so it can be used by the
     ESIM model.
     Compute a worddict from the train set, and transform the words in
     the sentences of the corpus to their indices, as well as the labels.
@@ -56,24 +55,18 @@ def preprocess_MNLI_data(inputdir,
 
     # Retrieve the train, dev and test data files from the dataset directory.
     train_file = ""
-    matched_dev_file = ""
-    mismatched_dev_file = ""
-    matched_test_file = ""
-    mismatched_test_file = ""
+    dev_file = ""
+    test_file = ""
     for file in os.listdir(inputdir):
-        if fnmatch.fnmatch(file, "*_train.txt"):
+        if fnmatch.fnmatch(file, "train.csv"):
             train_file = file
-        elif fnmatch.fnmatch(file, "*_dev_matched.txt"):
-            matched_dev_file = file
-        elif fnmatch.fnmatch(file, "*_dev_mismatched.txt"):
-            mismatched_dev_file = file
-        elif fnmatch.fnmatch(file, "*_test_matched_unlabeled.txt"):
-            matched_test_file = file
-        elif fnmatch.fnmatch(file, "*_test_mismatched_unlabeled.txt"):
-            mismatched_test_file = file
+        elif fnmatch.fnmatch(file, "dev.csv"):
+            dev_file = file
+        # elif fnmatch.fnmatch(file, "*_test.txt"):
+        #     test_file = file
 
     # -------------------- Train data preprocessing -------------------- #
-    preprocessor = Preprocessor(lowercase=lowercase,
+    preprocessor = CSVPreprocessor(lowercase=lowercase,
                                 ignore_punctuation=ignore_punctuation,
                                 num_words=num_words,
                                 stopwords=stopwords,
@@ -97,44 +90,26 @@ def preprocess_MNLI_data(inputdir,
         pickle.dump(transformed_data, pkl_file)
 
     # -------------------- Validation data preprocessing -------------------- #
-    print(20*"=", " Preprocessing dev sets ", 20*"=")
-    print("\t* Reading matched dev data...")
-    data = preprocessor.read_data(os.path.join(inputdir, matched_dev_file))
+    print(20*"=", " Preprocessing dev set ", 20*"=")
+    print("\t* Reading data...")
+    data = preprocessor.read_data(os.path.join(inputdir, dev_file))
 
     print("\t* Transforming words in premises and hypotheses to indices...")
     transformed_data = preprocessor.transform_to_indices(data)
     print("\t* Saving result...")
-    with open(os.path.join(targetdir, "matched_dev_data.pkl"), "wb") as pkl_file:
-        pickle.dump(transformed_data, pkl_file)
-
-    print("\t* Reading mismatched dev data...")
-    data = preprocessor.read_data(os.path.join(inputdir, mismatched_dev_file))
-
-    print("\t* Transforming words in premises and hypotheses to indices...")
-    transformed_data = preprocessor.transform_to_indices(data)
-    print("\t* Saving result...")
-    with open(os.path.join(targetdir, "mismatched_dev_data.pkl"), "wb") as pkl_file:
+    with open(os.path.join(targetdir, "dev_data.pkl"), "wb") as pkl_file:
         pickle.dump(transformed_data, pkl_file)
 
     # -------------------- Test data preprocessing -------------------- #
-    print(20*"=", " Preprocessing test sets ", 20*"=")
-    print("\t* Reading matched test data...")
-    data = preprocessor.read_data(os.path.join(inputdir, matched_test_file))
-
-    print("\t* Transforming words in premises and hypotheses to indices...")
-    transformed_data = preprocessor.transform_to_indices(data)
-    print("\t* Saving result...")
-    with open(os.path.join(targetdir, "matched_test_data.pkl"), "wb") as pkl_file:
-        pickle.dump(transformed_data, pkl_file)
-
-    print("\t* Reading mismatched test data...")
-    data = preprocessor.read_data(os.path.join(inputdir, mismatched_test_file))
-
-    print("\t* Transforming words in premises and hypotheses to indices...")
-    transformed_data = preprocessor.transform_to_indices(data)
-    print("\t* Saving result...")
-    with open(os.path.join(targetdir, "mismatched_test_data.pkl"), "wb") as pkl_file:
-        pickle.dump(transformed_data, pkl_file)
+    # print(20*"=", " Preprocessing test set ", 20*"=")
+    # print("\t* Reading data...")
+    # data = preprocessor.read_data(os.path.join(inputdir, test_file))
+    #
+    # print("\t* Transforming words in premises and hypotheses to indices...")
+    # transformed_data = preprocessor.transform_to_indices(data)
+    # print("\t* Saving result...")
+    # with open(os.path.join(targetdir, "test_data.pkl"), "wb") as pkl_file:
+    #     pickle.dump(transformed_data, pkl_file)
 
     # -------------------- Embeddings preprocessing -------------------- #
     print(20*"=", " Preprocessing embeddings ", 20*"=")
@@ -145,12 +120,14 @@ def preprocess_MNLI_data(inputdir,
 
 
 if __name__ == "__main__":
-    default_config = "../../config/preprocessing/mnli_preprocessing.json"
+    default_config = "../../config/preprocessing/rte_own_preprocessing.json"
 
-    parser = argparse.ArgumentParser(description="Preprocess the MultiNLI dataset")
-    parser.add_argument("--config",
-                        default=default_config,
-                        help="Path to a configuration file for preprocessing MultiNLI")
+    parser = argparse.ArgumentParser(description="Preprocess the RTE dataset")
+    parser.add_argument(
+        "--config",
+        default=default_config,
+        help="Path to a configuration file for preprocessing RTE"
+    )
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -160,10 +137,10 @@ if __name__ == "__main__":
     else:
         config_path = args.config
 
-    with open(os.path.normpath(config_path), 'r') as cfg_file:
+    with open(os.path.normpath(config_path), "r") as cfg_file:
         config = json.load(cfg_file)
 
-    preprocess_MNLI_data(
+    preprocess_RTE_data(
         os.path.normpath(os.path.join(script_dir, config["data_dir"])),
         os.path.normpath(os.path.join(script_dir, config["embeddings_file"])),
         os.path.normpath(os.path.join(script_dir, config["target_dir"])),

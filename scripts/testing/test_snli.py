@@ -67,7 +67,7 @@ def main(test_file, pretrained_file, batch_size=32):
     Test the ESIM model with pretrained weights on some dataset.
 
     Args:
-        test_file: The path to a file containing preprocessed NLI data.
+        test_file: The path to a file containing preprocessed rte_own data.
         pretrained_file: The path to a checkpoint produced by the
             'train_model' script.
         vocab_size: The number of words in the vocabulary of the model

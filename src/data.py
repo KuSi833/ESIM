@@ -1,10 +1,11 @@
 """
-Preprocessor and dataset definition for NLI.
+Preprocessor and dataset definition for rte_own.
 """
 # Aurelien Coet, 2018.
 
 import string
 import torch
+import pandas as pd
 import numpy as np
 
 from collections import Counter
@@ -15,7 +16,7 @@ class Preprocessor(object):
     """
     Preprocessor class for Natural Language Inference datasets.
 
-    The class can be used to read NLI datasets, build worddicts for them
+    The class can be used to read rte_own datasets, build worddicts for them
     and transform their premises, hypotheses and labels into lists of
     integer indices.
     """
@@ -57,7 +58,7 @@ class Preprocessor(object):
 
     def read_data(self, filepath):
         """
-        Read the premises, hypotheses and labels from some NLI dataset's
+        Read the premises, hypotheses and labels from some rte_own dataset's
         file and return them in a dictionary. The file should be in the same
         form as SNLI's .txt files.
 
@@ -76,8 +77,9 @@ class Preprocessor(object):
             # Translation tables to remove parentheses and punctuation from
             # strings.
             parentheses_table = str.maketrans({"(": None, ")": None})
-            punct_table = str.maketrans({key: " "
-                                         for key in string.punctuation})
+            punct_table = str.maketrans(
+                {key: " "
+                 for key in string.punctuation})
 
             # Ignore the headers on the first line of the file.
             next(input_data)
@@ -106,17 +108,23 @@ class Preprocessor(object):
                     hypothesis = hypothesis.translate(punct_table)
 
                 # Each premise and hypothesis is split into a list of words.
-                premises.append([w for w in premise.rstrip().split()
-                                 if w not in self.stopwords])
-                hypotheses.append([w for w in hypothesis.rstrip().split()
-                                   if w not in self.stopwords])
+                premises.append([
+                    w for w in premise.rstrip().split()
+                    if w not in self.stopwords
+                ])
+                hypotheses.append([
+                    w for w in hypothesis.rstrip().split()
+                    if w not in self.stopwords
+                ])
                 labels.append(line[0])
                 ids.append(pair_id)
 
-            return {"ids": ids,
-                    "premises": premises,
-                    "hypotheses": hypotheses,
-                    "labels": labels}
+            return {
+                "ids": ids,
+                "premises": premises,
+                "hypotheses": hypotheses,
+                "labels": labels
+            }
 
     def build_worddict(self, data):
         """
@@ -126,7 +134,7 @@ class Preprocessor(object):
 
         Args:
             data: A dictionary containing the premises, hypotheses and
-                labels of some NLI dataset, in the format returned by the
+                labels of some rte_own dataset, in the format returned by the
                 'read_data' method of the Preprocessor class.
         """
         words = []
@@ -158,8 +166,10 @@ class Preprocessor(object):
 
         if self.labeldict == {}:
             label_names = set(data["labels"])
-            self.labeldict = {label_name: i
-                              for i, label_name in enumerate(label_names)}
+            self.labeldict = {
+                label_name: i
+                for i, label_name in enumerate(label_names)
+            }
 
     def words_to_indices(self, sentence):
         """
@@ -205,9 +215,10 @@ class Preprocessor(object):
         Returns:
             A list of words.
         """
-        return [list(self.worddict.keys())[list(self.worddict.values())
-                                           .index(i)]
-                for i in indices]
+        return [
+            list(self.worddict.keys())[list(self.worddict.values()).index(i)]
+            for i in indices
+        ]
 
     def transform_to_indices(self, data):
         """
@@ -223,10 +234,12 @@ class Preprocessor(object):
             A dictionary containing the transformed premises, hypotheses and
             labels.
         """
-        transformed_data = {"ids": [],
-                            "premises": [],
-                            "hypotheses": [],
-                            "labels": []}
+        transformed_data = {
+            "ids": [],
+            "premises": [],
+            "hypotheses": [],
+            "labels": []
+        }
 
         for i, premise in enumerate(data["premises"]):
             # Ignore sentences that have a label for which no index was
@@ -305,6 +318,152 @@ class Preprocessor(object):
         return embedding_matrix
 
 
+class CSVPreprocessor(Preprocessor):
+    """
+    Preprocessor class for Natural Language Inference datasets.
+
+    The class can be used to read rte_own datasets, build worddicts for them
+    and transform their premises, hypotheses and labels into lists of
+    integer indices.
+    """
+
+    def __init__(self,
+                 lowercase=False,
+                 ignore_punctuation=False,
+                 num_words=None,
+                 stopwords=[],
+                 labeldict={},
+                 bos=None,
+                 eos=None):
+        """
+        Args:
+            lowercase: A boolean indicating whether the words in the datasets
+                being preprocessed must be lowercased or not. Defaults to
+                False.
+            ignore_punctuation: A boolean indicating whether punctuation must
+                be ignored or not in the datasets preprocessed by the object.
+            num_words: An integer indicating the number of words to use in the
+                worddict of the object. If set to None, all the words in the
+                data are kept. Defaults to None.
+            stopwords: A list of words that must be ignored when building the
+                worddict for a dataset. Defaults to an empty list.
+            bos: A string indicating the symbol to use for the 'beginning of
+                sentence' token in the data. If set to None, the token isn't
+                used. Defaults to None.
+            eos: A string indicating the symbol to use for the 'end of
+                sentence' token in the data. If set to None, the token isn't
+                used. Defaults to None.
+        """
+        super().__init__(lowercase, ignore_punctuation, num_words, stopwords,
+                         labeldict, bos, eos)
+
+    def read_data(self, filepath):
+        """
+        Read the premises, hypotheses and labels from some rte_own dataset's
+        file and return them in a dictionary. The file should be in the same
+        form as SNLI's .txt files.
+
+        Args:
+            filepath: The path to a file containing some premises, hypotheses
+                and labels that must be read. The file should be formatted in
+                the same way as the SNLI (and MultiNLI) dataset.
+
+        Returns:
+            A dictionary containing three lists, one for the premises, one for
+            the hypotheses, and one for the labels in the input data.
+        """
+        ids, premises, hypotheses, labels = [], [], [], []
+
+        # Translation tables to remove parentheses and punctuation from
+        # strings.
+        parentheses_table = str.maketrans({"(": None, ")": None})
+        punct_table = str.maketrans({key: " " for key in string.punctuation})
+
+        df = pd.read_csv(filepath)
+
+        for index, premise, hypothesis, label in df.itertuples():
+
+            # Ignore sentences that have no gold label.
+            if label not in [0, 1] or isinstance(premise, float) or isinstance(
+                    hypothesis, float):  # FIX
+                continue
+
+            pair_id = index
+
+            # Remove '(' and ')' from the premises and hypotheses.
+            premise = premise.translate(parentheses_table)
+            hypothesis = hypothesis.translate(parentheses_table)
+
+            if self.lowercase:
+                premise = premise.lower()
+                hypothesis = hypothesis.lower()
+
+            if self.ignore_punctuation:
+                premise = premise.translate(punct_table)
+                hypothesis = hypothesis.translate(punct_table)
+
+            # Each premise and hypothesis is split into a list of words.
+            premises.append([
+                w for w in premise.rstrip().split() if w not in self.stopwords
+            ])
+            hypotheses.append([
+                w for w in hypothesis.rstrip().split()
+                if w not in self.stopwords
+            ])
+            labels.append(label)
+            ids.append(pair_id)
+
+        return {
+            "ids": ids,
+            "premises": premises,
+            "hypotheses": hypotheses,
+            "labels": labels
+        }
+
+    def transform_to_indices(self, data):
+        """
+        Transform the words in the premises and hypotheses of a dataset, as
+        well as their associated labels, to integer indices.
+
+        Args:
+            data: A dictionary containing lists of premises, hypotheses
+                and labels, in the format returned by the 'read_data'
+                method of the Preprocessor class.
+
+        Returns:
+            A dictionary containing the transformed premises, hypotheses and
+            labels.
+        """
+        transformed_data = {
+            "ids": [],
+            "premises": [],
+            "hypotheses": [],
+            "labels": []
+        }
+
+        for i, premise in enumerate(data["premises"]):
+            # Ignore sentences that have a label for which no index was
+            # defined in 'labeldict'.
+            label = str(data["labels"][i])
+            if label not in self.labeldict and label != "hidden":
+                continue
+
+            transformed_data["ids"].append(data["ids"][i])
+
+            if label == "hidden":
+                transformed_data["labels"].append(-1)
+            else:
+                transformed_data["labels"].append(self.labeldict[label])
+
+            indices = self.words_to_indices(premise)
+            transformed_data["premises"].append(indices)
+
+            indices = self.words_to_indices(data["hypotheses"][i])
+            transformed_data["hypotheses"].append(indices)
+
+        return transformed_data
+
+
 class NLIDataset(Dataset):
     """
     Dataset class for Natural Language Inference datasets.
@@ -347,14 +506,17 @@ class NLIDataset(Dataset):
 
         self.num_sequences = len(data["premises"])
 
-        self.data = {"ids": [],
-                     "premises": torch.ones((self.num_sequences,
-                                             self.max_premise_length),
-                                            dtype=torch.long) * padding_idx,
-                     "hypotheses": torch.ones((self.num_sequences,
-                                               self.max_hypothesis_length),
-                                              dtype=torch.long) * padding_idx,
-                     "labels": torch.tensor(data["labels"], dtype=torch.long)}
+        self.data = {
+            "ids": [],
+            "premises":
+            torch.ones((self.num_sequences, self.max_premise_length),
+                       dtype=torch.long) * padding_idx,
+            "hypotheses":
+            torch.ones((self.num_sequences, self.max_hypothesis_length),
+                       dtype=torch.long) * padding_idx,
+            "labels":
+            torch.tensor(data["labels"], dtype=torch.long)
+        }
 
         for i, premise in enumerate(data["premises"]):
             self.data["ids"].append(data["ids"][i])
@@ -369,11 +531,17 @@ class NLIDataset(Dataset):
         return self.num_sequences
 
     def __getitem__(self, index):
-        return {"id": self.data["ids"][index],
-                "premise": self.data["premises"][index],
-                "premise_length": min(self.premises_lengths[index],
-                                      self.max_premise_length),
-                "hypothesis": self.data["hypotheses"][index],
-                "hypothesis_length": min(self.hypotheses_lengths[index],
-                                         self.max_hypothesis_length),
-                "label": self.data["labels"][index]}
+        return {
+            "id":
+            self.data["ids"][index],
+            "premise":
+            self.data["premises"][index],
+            "premise_length":
+            min(self.premises_lengths[index], self.max_premise_length),
+            "hypothesis":
+            self.data["hypotheses"][index],
+            "hypothesis_length":
+            min(self.hypotheses_lengths[index], self.max_hypothesis_length),
+            "label":
+            self.data["labels"][index]
+        }

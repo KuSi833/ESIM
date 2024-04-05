@@ -9,7 +9,7 @@ import argparse
 import fnmatch
 import json
 
-from esim.data import Preprocessor
+from src.data import Preprocessor
 
 
 def preprocess_SNLI_data(inputdir,

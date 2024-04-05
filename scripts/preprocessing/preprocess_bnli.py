@@ -1,5 +1,5 @@
 """
-Preprocess the Breaking NLI data set.
+Preprocess the Breaking rte_own data set.
 """
 
 import os
@@ -13,11 +13,11 @@ from esim.data import Preprocessor
 
 def jsonl_to_txt(input_file, output_file):
     """
-    Transform the Breaking NLI data from a jsonl file to .txt for
+    Transform the Breaking rte_own data from a jsonl file to .txt for
     further processing.
 
     Args:
-        input_file: The path to the Breaking NLI data set in jsonl format.
+        input_file: The path to the Breaking rte_own data set in jsonl format.
         output_file: The path to the .txt file where the tranformed data must
             be saved.
     """
@@ -27,7 +27,7 @@ def jsonl_to_txt(input_file, output_file):
         for line in input_f:
             data = json.loads(line)
 
-            # Sentences in the Breaking NLI data set aren't distributed in the
+            # Sentences in the Breaking rte_own data set aren't distributed in the
             # form of binary parses, so we must tokenise them with nltk.
             sentence1 = word_tokenize(data['sentence1'])
             sentence1 = " ".join(sentence1)
@@ -50,9 +50,9 @@ def preprocess_BNLI_data(input_file,
     on SNLI.
 
     Args:
-        inputdir: The path to the file containing the Breaking NLI (BNLI) data.
+        inputdir: The path to the file containing the Breaking rte_own (BNLI) data.
         target_dir: The path to the directory where the preprocessed Breaking
-            NLI data must be saved.
+            rte_own data must be saved.
         worddict: The path to the pickled worddict used for preprocessing the
             training data on which models were trained before being tested on
             BNLI.
@@ -64,7 +64,7 @@ def preprocess_BNLI_data(input_file,
 
     output_file = os.path.join(targetdir, "bnli.txt")
 
-    print(20*"=", " Preprocessing Breaking NLI data set ", 20*"=")
+    print(20*"=", " Preprocessing Breaking rte_own data set ", 20*"=")
     print("\t* Tranforming jsonl data to txt...")
     jsonl_to_txt(input_file, output_file)
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
     default_config = "../../config/preprocessing/bnli_preprocessing.json"
 
     parser = argparse.ArgumentParser(description="Preprocess the Breaking\
- NLI (BNLI) dataset")
+ rte_own (BNLI) dataset")
     parser.add_argument("--config",
                         default=default_config,
                         help="Path to a configuration file for preprocessing BNLI")
