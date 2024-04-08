@@ -110,5 +110,6 @@ venv.bak/
 # Data
 data/dataset
 data/embeddings
+data/results
 data/preprocessed
 data/checkpoints
