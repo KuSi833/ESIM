@@ -62,8 +62,8 @@ def preprocess_RTE_data(inputdir,
             train_file = file
         elif fnmatch.fnmatch(file, "dev.csv"):
             dev_file = file
-        # elif fnmatch.fnmatch(file, "*_test.txt"):
-        #     test_file = file
+        elif fnmatch.fnmatch(file, "test.csv"):
+            test_file = file
 
     # -------------------- Train data preprocessing -------------------- #
     preprocessor = CSVPreprocessor(lowercase=lowercase,
@@ -101,15 +101,15 @@ def preprocess_RTE_data(inputdir,
         pickle.dump(transformed_data, pkl_file)
 
     # -------------------- Test data preprocessing -------------------- #
-    # print(20*"=", " Preprocessing test set ", 20*"=")
-    # print("\t* Reading data...")
-    # data = preprocessor.read_data(os.path.join(inputdir, test_file))
-    #
-    # print("\t* Transforming words in premises and hypotheses to indices...")
-    # transformed_data = preprocessor.transform_to_indices(data)
-    # print("\t* Saving result...")
-    # with open(os.path.join(targetdir, "test_data.pkl"), "wb") as pkl_file:
-    #     pickle.dump(transformed_data, pkl_file)
+    print(20*"=", " Preprocessing test set ", 20*"=")
+    print("\t* Reading data...")
+    data = preprocessor.read_test_data(os.path.join(inputdir, test_file))
+
+    print("\t* Transforming words in premises and hypotheses to indices...")
+    transformed_data = preprocessor.transform_to_indices_test(data)
+    print("\t* Saving result...")
+    with open(os.path.join(targetdir, "test_data.pkl"), "wb") as pkl_file:
+        pickle.dump(transformed_data, pkl_file)
 
     # -------------------- Embeddings preprocessing -------------------- #
     print(20*"=", " Preprocessing embeddings ", 20*"=")

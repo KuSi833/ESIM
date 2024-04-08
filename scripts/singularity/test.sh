@@ -28,5 +28,5 @@ sg $GROUP -c "singularity run $NVIDIAFLAG \
     --pwd /home/dockeruser/esim \
     --contain \
     $SINGULARITY_IMAGE \
-    python3 -m scripts.testing.test_rte \
-    ./data/preprocessed/RTE/test_data.pkl ./data/checkpoints/RTE/best.pth.tar"
+    python3 -m scripts.testing.test_rte_own \
+    ./data/preprocessed/RTE_own/test_data.pkl ./data/checkpoints/RTE_own/best.pth.tar"
