@@ -9,14 +9,14 @@ import pickle
 import argparse
 import torch
 import pandas as pd
+from tqdm import tqdm
 
 from torch.utils.data import DataLoader
 from src.data import NLITestDataset
 from src.model import ESIM
-from src.utils import correct_predictions
 
 
-def test(model, dataloader, use_labels=True):
+def test(model, dataloader):
     """
     Test the accuracy of a model on some labelled test dataset.
 
@@ -35,12 +35,11 @@ def test(model, dataloader, use_labels=True):
 
     time_start = time.time()
     batch_time = 0.0
-    accuracy = 0.0
 
     predictions = []
     # Deactivate autograd for evaluation.
     with torch.no_grad():
-        for batch in dataloader:
+        for batch in tqdm(dataloader, desc="Processing batches"):
             batch_start = time.time()
 
             # Move input and output data to the GPU if one is used.
@@ -55,11 +54,6 @@ def test(model, dataloader, use_labels=True):
             _, predicted_labels = torch.max(probs, 1)
             predictions.extend(predicted_labels.cpu().numpy())
 
-            if use_labels:
-                labels = batch["label"].to(device)
-                accuracy += correct_predictions(probs, labels)
-            else:
-                accuracy += 0  # FIX
             batch_time += time.time() - batch_start
 
     os.makedirs("./data/results/RTE_own", exist_ok=True)
@@ -68,9 +62,8 @@ def test(model, dataloader, use_labels=True):
 
     batch_time /= len(dataloader)
     total_time = time.time() - time_start
-    accuracy /= (len(dataloader.dataset))
 
-    return batch_time, total_time, accuracy
+    return batch_time, total_time
 
 
 def main(test_file, pretrained_file, batch_size=32):
@@ -94,7 +87,7 @@ def main(test_file, pretrained_file, batch_size=32):
 
     print(20 * "=", " Preparing for testing ", 20 * "=")
 
-    checkpoint = torch.load(pretrained_file)
+    checkpoint = torch.load(pretrained_file, map_location=device)
 
     # Retrieving model parameters from checkpoint.
     vocab_size = checkpoint["model"]["_word_embedding.weight"].size(0)
@@ -119,12 +112,11 @@ def main(test_file, pretrained_file, batch_size=32):
 
     print(20 * "=", " Testing ESIM model on device: {} ".format(device),
           20 * "=")
-    batch_time, total_time, accuracy = test(model,
-                                            test_loader,
-                                            use_labels=False)
+    batch_time, total_time = test(model, test_loader)
 
-    print("-> Average batch processing time: {:.4f}s, total test time:\
- {:.4f}s, accuracy: {:.4f}%".format(batch_time, total_time, (accuracy * 100)))
+    print(
+        f"-> Average batch processing time: {batch_time:.4f}s, total test time: {total_time:.4f}s"
+    )
 
 
 if __name__ == "__main__":
