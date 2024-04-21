@@ -1,6 +1,6 @@
 wget
 numpy
-nltk
 matplotlib
 tqdm
 pandas
+scikit-learn
