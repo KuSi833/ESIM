@@ -442,7 +442,7 @@ class CSVPreprocessor(Preprocessor):
         parentheses_table = str.maketrans({"(": None, ")": None})
         punct_table = str.maketrans({key: " " for key in string.punctuation})
 
-        df = pd.read_csv(filepath)
+        df = pd.read_csv(filepath)[["premise", "hypothesis"]]
 
         for index, premise, hypothesis in df.itertuples():
 

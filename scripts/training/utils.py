@@ -8,7 +8,7 @@ import torch
 import torch.nn as nn
 
 from tqdm import tqdm
-from esim.utils import correct_predictions
+from src.utils import correct_predictions
 
 
 def train(model,
